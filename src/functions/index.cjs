@@ -1,5 +1,14 @@
 const { MongoClient } = require("mongodb");
 
+// Helper function to send JSON response with CORS headers
+function sendJsonResponse(res, data, statusCode = 200) {
+    return res.json(data, statusCode, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key"
+    });
+}
+
 // Type guard to check if an error is a database error
 function isDatabaseError(error) {
     return error instanceof Error;
@@ -21,14 +30,13 @@ module.exports = async function (context) {
     const { req, res, log, error } = context;
 
     try {
-        // Set CORS headers for web requests
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Admin-Key");
-
         // Handle preflight requests
         if (req.method === "OPTIONS") {
-            return res.send("", 200);
+            return res.send("", 200, {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key"
+            });
         }
 
         const uri = process.env.MONGODB_URI;
@@ -43,14 +51,11 @@ module.exports = async function (context) {
 
         // Health check
         if (path === "/health" || path === "/") {
-            return res.json(
-                {
-                    status: "OK",
-                    message: "Appwrite function is running",
-                    timestamp: new Date().toISOString(),
-                },
-                200
-            );
+            return sendJsonResponse(res, {
+                status: "OK",
+                message: "Appwrite function is running",
+                timestamp: new Date().toISOString(),
+            });
         }
 
         // Submit form data
@@ -58,17 +63,15 @@ module.exports = async function (context) {
             try {
                 // Validate request body
                 if (!isValidFormData(req.body)) {
-                    return res.json({ error: "Invalid form data" }, 400);
+                    return sendJsonResponse(res, { error: "Invalid form data" }, 400);
                 }
 
                 const formData = req.body;
 
                 // Validate admin key
                 if (!formData.adminKey || formData.adminKey !== process.env.ADMIN_KEY) {
-                    return res.json({ error: "Invalid admin key" }, 401);
-                }
-
-                // Remove admin key from data before saving
+                    return sendJsonResponse(res, { error: "Invalid admin key" }, 401);
+                }                // Remove admin key from data before saving
                 const { adminKey, ...dataToSave } = formData;
 
                 // Connect to MongoDB
@@ -94,27 +97,21 @@ module.exports = async function (context) {
                 await client.close();
 
                 log(`Data saved successfully with ID: ${result.insertedId}`);
-                return res.json(
-                    {
-                        success: true,
-                        id: result.insertedId.toString(),
-                        message: "Form submitted successfully",
-                    },
-                    200
-                );
+                return sendJsonResponse(res, {
+                    success: true,
+                    id: result.insertedId.toString(),
+                    message: "Form submitted successfully",
+                });
             } catch (dbError) {
                 const errorMessage = isDatabaseError(dbError)
                     ? dbError.message
                     : "Unknown database error";
                 error("Database error:", errorMessage);
-                return res.json(
-                    {
-                        error: "Failed to save data",
-                        details:
-                            process.env.NODE_ENV === "development" ? errorMessage : undefined,
-                    },
-                    500
-                );
+                return sendJsonResponse(res, {
+                    error: "Failed to save data",
+                    details:
+                        process.env.NODE_ENV === "development" ? errorMessage : undefined,
+                }, 500);
             }
         }
 
@@ -125,7 +122,7 @@ module.exports = async function (context) {
                     req.headers["x-admin-key"] || req.headers["X-Admin-Key"];
 
                 if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
-                    return res.json({ error: "Invalid admin key" }, 401);
+                    return sendJsonResponse(res, { error: "Invalid admin key" }, 401);
                 }
 
                 // Connect to MongoDB
@@ -146,42 +143,33 @@ module.exports = async function (context) {
                 await client.close();
 
                 log(`Retrieved ${documents.length} documents`);
-                return res.json(documents, 200);
+                return sendJsonResponse(res, documents);
             } catch (dbError) {
                 const errorMessage = isDatabaseError(dbError)
                     ? dbError.message
                     : "Unknown database error";
                 error("Database error:", errorMessage);
-                return res.json(
-                    {
-                        error: "Failed to fetch data",
-                        details:
-                            process.env.NODE_ENV === "development" ? errorMessage : undefined,
-                    },
-                    500
-                );
+                return sendJsonResponse(res, {
+                    error: "Failed to fetch data",
+                    details:
+                        process.env.NODE_ENV === "development" ? errorMessage : undefined,
+                }, 500);
             }
         }
 
         // Default 404
-        return res.json(
-            {
-                error: "Not found",
-                path: path,
-                method: method,
-            },
-            404
-        );
+        return sendJsonResponse(res, {
+            error: "Not found",
+            path: path,
+            method: method,
+        }, 404);
     } catch (err) {
         const errorMessage = isDatabaseError(err) ? err.message : "Unknown error";
         error("Function execution failed:", errorMessage);
-        return res.json(
-            {
-                error: "Internal server error",
-                details:
-                    process.env.NODE_ENV === "development" ? errorMessage : undefined,
-            },
-            500
-        );
+        return sendJsonResponse(res, {
+            error: "Internal server error",
+            details:
+                process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        }, 500);
     }
 };
