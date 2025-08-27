@@ -6,9 +6,11 @@ import Success from "./Success";
 import { useState } from "react";
 import { IoMdFemale, IoMdMale } from "react-icons/io";
 import { type FormData } from "../types";
+import { executeRecaptcha } from "../utils/recaptcha";
 
 const Form = () => {
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -21,12 +23,25 @@ const Form = () => {
       import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
     try {
-      await axios.post<string>(`${backendUrl}/submit`, data);
+      setIsSubmitting(true);
+
+      // Get reCAPTCHA token
+      const captchaToken = await executeRecaptcha("submit");
+
+      // Add captcha token to form data
+      const formDataWithCaptcha = {
+        ...data,
+        captchaToken,
+      };
+
+      await axios.post<string>(`${backendUrl}/submit`, formDataWithCaptcha);
       setIsSuccessful(true); // Show success component
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const backendMsg =
-          (error.response.data as { message?: string }).message ||
+          (error.response.data as { message?: string; error?: string })
+            .message ||
+          (error.response.data as { message?: string; error?: string }).error ||
           error.message;
         console.error(new Error(backendMsg));
         alert(`Error submitting data: ${backendMsg}`);
@@ -35,7 +50,10 @@ const Form = () => {
         alert(`Error submitting data: ${error.message}`);
       } else {
         console.error("Error submitting data:", error);
+        alert("An unexpected error occurred while submitting the form");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -536,8 +554,11 @@ const Form = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="relative justify-self-center 
-          items-start px-6 py-3 text-white text-base font-semibold tracking-wide rounded-xl overflow-hidden bg-transparent border-none cursor-pointer block group mt-4"
+            disabled={isSubmitting}
+            className={`relative justify-self-center 
+          items-start px-6 py-3 text-white text-base font-semibold tracking-wide rounded-xl overflow-hidden bg-transparent border-none cursor-pointer block group mt-4 ${
+            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           >
             <span
               className="absolute inset-0 bg-[#0f34ef] rounded-xl transition-all duration-400 ease-in-out 
@@ -545,8 +566,33 @@ const Form = () => {
             group-hover:scale-110 group-hover:translate-x-[5%] group-hover:translate-y-[50%] z-[-2]"
             ></span>
             <span className="absolute bottom-0 right-0 w-9 h-9 bg-white/10 backdrop-blur-md rounded-full transition-all duration-400 ease-in-out group-hover:w-full group-hover:h-full group-hover:rounded-xl group-hover:translate-x-0 group-hover:translate-y-0 translate-x-[10px] translate-y-[10px] z-[-1]"></span>
-            🚀 Submit Registration
+            {isSubmitting ? "🔄 Submitting..." : "🚀 Submit Registration"}
           </button>
+
+          {/* reCAPTCHA Notice */}
+          <div className="text-center mt-4">
+            <p className="text-xs text-blue-200/70">
+              This site is protected by reCAPTCHA and the Google{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:text-blue-100"
+              >
+                Privacy Policy
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:text-blue-100"
+              >
+                Terms of Service
+              </a>{" "}
+              apply.
+            </p>
+          </div>
         </form>
       </div>
     </div>

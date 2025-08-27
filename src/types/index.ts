@@ -10,4 +10,5 @@ export interface FormData {
   team_name: string | undefined;
   referrer_name: string | undefined;
   referrer_email: string | undefined;
+  captchaToken: string; // reCAPTCHA token for spam protection
 }

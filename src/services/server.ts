@@ -28,10 +28,69 @@ app.get("/health", async (_: Request, response: Response) => {
   response.send("Server is running! DB Connected");
 });
 
+// Helper function to verify reCAPTCHA token
+async function verifyCaptcha(
+  token: string
+): Promise<{ success: boolean; error?: string; score?: number }> {
+  try {
+    if (!token) {
+      return { success: false, error: "CAPTCHA token is required" };
+    }
+
+    const secretKey = process.env.GOOGLE_CAPTCHA_SECRET_KEY;
+    if (!secretKey) {
+      return { success: false, error: "reCAPTCHA not configured on server" };
+    }
+
+    const verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
+    const response = await fetch(verifyUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return {
+        success: false,
+        error: "CAPTCHA verification failed",
+      };
+    }
+
+    // Check score for reCAPTCHA v3 (0.0 = bot, 1.0 = human)
+    if (data.score !== undefined && data.score < 0.5) {
+      return {
+        success: false,
+        error: "CAPTCHA score too low, please try again",
+      };
+    }
+
+    return { success: true, score: data.score };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: `CAPTCHA verification error: ${error}`,
+    };
+  }
+}
+
 app.post("/submit", async (req: Request, response: Response) => {
   try {
-    const data = req.body;
-    await insertData(data);
+    const { captchaToken, ...formData } = req.body;
+
+    // Verify reCAPTCHA token
+    const captchaResult = await verifyCaptcha(captchaToken);
+    if (!captchaResult.success) {
+      return response.status(400).json({
+        success: false,
+        message: captchaResult.error || "CAPTCHA verification failed",
+      });
+    }
+
+    await insertData(formData);
     response.send("Data submitted successfully!");
   } catch (error: unknown) {
     console.error("Error submitting data:", error);
