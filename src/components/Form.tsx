@@ -402,7 +402,7 @@ const Form = () => {
                   }`}
                   id="linkedin_link"
                   type="url"
-                  placeholder="https://linkedin.com/in/username"
+                  placeholder="https://www.linkedin.com/in/username"
                   {...register("linkedin_link", {
                     pattern: {
                       value:

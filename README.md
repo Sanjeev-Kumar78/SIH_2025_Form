@@ -27,7 +27,6 @@ A comprehensive web application for Smart India Hackathon (SIH) 2025 team format
 
 - **Node.js** with Express
 - **MongoDB** for database
-- **Nodemailer** for email services
 - **CORS** enabled for cross-origin requests
 - **TypeScript** for type safety
 
@@ -97,6 +96,7 @@ This command will:
 ## Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
+[GOOGLE RECAPTCHA](https://www.google.com/recaptcha/admin)
 
 ```env
 # Backend Configuration
@@ -104,21 +104,13 @@ VITE_BACKEND_URL=http://localhost:3000
 
 # Database Configuration
 MONGODB_URI=your_mongodb_connection_string
+MONGODB_DB_NAME=your_database_name
+MONGODB_COLLECTION_NAME=your_collection_name
 
-# Email Configuration (choose one)
-# For Nodemailer (Gmail)
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-
-# For MailerSend
-MAILERSEND_API_KEY=your_mailersend_api_key
-
-# For Mailjet
-MAILJET_API_KEY=your_mailjet_api_key
-MAILJET_SECRET_KEY=your_mailjet_secret_key
+# reCAPTCHA Configuration
+VITE_SITE_KEY=your_recaptcha_site_key
+GOOGLE_RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
 ```
-
-## Project Structure
 
 ```
 SIH_2025_Form/
