@@ -434,7 +434,7 @@ const Form = () => {
                   }`}
                   id="instagram_link"
                   type="url"
-                  placeholder="https://instagram.com/username"
+                  placeholder="https://www.instagram.com/username"
                   {...register("instagram_link", {
                     pattern: {
                       value:
