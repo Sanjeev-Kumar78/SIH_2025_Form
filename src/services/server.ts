@@ -5,9 +5,9 @@ import {
   collection_to_csv,
 } from "../services/data_handler";
 
-import * as express from "express";
+import express from "express";
 import type { Express, Request, Response } from "express";
-import * as cors from "cors";
+import cors from "cors";
 import * as crypto from "crypto";
 
 const app: Express = express();

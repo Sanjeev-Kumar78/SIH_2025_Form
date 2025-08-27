@@ -3,7 +3,7 @@
     "target": "ES2020",
     "module": "CommonJS",
     "lib": ["ES2020"],
-    "outDir": "./appwrite-function",
+    "outDir": "./functions",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
@@ -12,9 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "declaration": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "declaration": false
   },
   "include": ["src/functions/**/*", "src/services/**/*", "src/types/**/*"],
   "exclude": [
