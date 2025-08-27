@@ -2,10 +2,12 @@ const { MongoClient } = require("mongodb");
 
 // Helper function to send JSON response with CORS headers
 function sendJsonResponse(res, data, statusCode = 200) {
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     return res.json(data, statusCode, {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": frontendUrl,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key"
+        "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key",
+        "Access-Control-Allow-Credentials": "true"
     });
 }
 
@@ -30,12 +32,15 @@ module.exports = async function (context) {
     const { req, res, log, error } = context;
 
     try {
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
         // Handle preflight requests
         if (req.method === "OPTIONS") {
             return res.send("", 200, {
-                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Origin": frontendUrl,
                 "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key"
+                "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key",
+                "Access-Control-Allow-Credentials": "true"
             });
         }
 
