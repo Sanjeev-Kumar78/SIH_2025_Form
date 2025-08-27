@@ -12,7 +12,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "declaration": false
+    "declaration": false,
+    "allowJs": true
   },
   "include": ["src/functions/**/*", "src/services/**/*", "src/types/**/*"],
   "exclude": [

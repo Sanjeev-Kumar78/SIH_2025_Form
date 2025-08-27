@@ -47,7 +47,9 @@ function isFormDataWithAdminKey(body: unknown): body is FormDataWithAdminKey {
 }
 
 // Appwrite function entry point
-export default async ({ req, res, log, error }: AppwriteContext) => {
+const handler = async function (context: AppwriteContext) {
+  const { req, res, log, error } = context;
+
   try {
     // Set CORS headers for web requests
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -82,7 +84,7 @@ export default async ({ req, res, log, error }: AppwriteContext) => {
     }
 
     // Submit form data
-    if (path === "/api/submit" && method === "POST") {
+    if (path === "/submit" && method === "POST") {
       try {
         // Validate request body
         if (!isFormDataWithAdminKey(req.body)) {
@@ -145,7 +147,7 @@ export default async ({ req, res, log, error }: AppwriteContext) => {
     }
 
     // Get data (admin only)
-    if (path === "/api/data" && method === "GET") {
+    if (path === "/data" && method === "GET") {
       try {
         const adminKey =
           req.headers["x-admin-key"] || req.headers["X-Admin-Key"];
@@ -208,3 +210,7 @@ export default async ({ req, res, log, error }: AppwriteContext) => {
     );
   }
 };
+
+// Export for Appwrite
+module.exports = handler;
+export default handler;
