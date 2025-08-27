@@ -3,7 +3,7 @@
     "target": "ES2020",
     "module": "CommonJS",
     "lib": ["ES2020"],
-    "outDir": "./functions",
+    "outDir": "./dist/",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
