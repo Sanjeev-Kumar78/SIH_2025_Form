@@ -5,8 +5,8 @@ import {
   type WithId,
   type Document,
 } from "mongodb";
-import { type FormData } from "../components/Form";
-import dotenv from "dotenv";
+import { type FormData } from "../types";
+import * as dotenv from "dotenv";
 dotenv.config();
 
 const uri: string = process.env.MONGODB_URI as string;
