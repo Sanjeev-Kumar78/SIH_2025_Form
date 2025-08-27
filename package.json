@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:production": "NODE_ENV=production tsc -b && vite build --mode production",
-    "build:appwrite": "tsc --project tsconfig.appwrite.json",
     "lint": "eslint .",
     "preview": "vite preview",
     "backend": "npx tsx src/services/server.ts",
