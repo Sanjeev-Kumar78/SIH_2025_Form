@@ -406,8 +406,9 @@ const Form = () => {
                   {...register("linkedin_link", {
                     pattern: {
                       value:
-                        /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/,
-                      message: "Invalid LinkedIn URL format",
+                        /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[^/\s]+\/?(?:\?[^\s#]*)?(?:#[^\s]*)?$/,
+                      message:
+                        "Invalid LinkedIn URL format: https://www.linkedin.com/in/username",
                     },
                   })}
                 />
